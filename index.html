@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <!-- MindAR ライブラリ -->
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    <!-- 複数アニメーション再生に必須のライブラリ -->
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
+
+    <script>
+      // ターゲットを見失っても消さない & 位置を補間して安定させる
+      AFRAME.registerComponent('ar-handler', {
+        init: function () {
+          const el = this.el;
+          el.addEventListener('targetFound', () => {
+            console.log("発見しました");
+          });
+          el.addEventListener('targetLost', () => {
+            // 見失っても表示を維持する
+            el.setAttribute("visible", true);
+          });
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <!-- 
+      filterMinCF, filterBeta: これらを追加すると、
+      マーカーが小刻みに震えるのを抑え、位置を安定させることができます。
+    -->
+    <a-scene 
+      mindar-image="imageTargetSrc: ./targets.mind; filterMinCF:0.0001; filterBeta: 0.001;" 
+      color-space="sRGB" 
+      renderer="colorManagement: true, physicallyCorrectLights" 
+      vr-mode-ui="enabled: false" 
+      device-orientation-permission-ui="enabled: false">
+      
+      <a-assets>
+        <a-asset-item id="sakuraModel" src="./sakura.glb"></a-asset-item>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <!-- 
+        ar-handler を追加して、消えないように制御
+      -->
+      <a-entity mindar-image-target="targetIndex: 0" ar-handler>
+        <!-- 
+          animation-mixer="clip: *" 
+          これで、ラグビーボール(1)と桜(2,3)がすべて同時に動きます！
+        -->
+        <a-gltf-model 
+          src="#sakuraModel" 
+          position="0 0 0" 
+          rotation="0 0 0" 
+          scale="0.5 0.5 0.5"
+          animation-mixer="clip: *; loop: repeat">
+        </a-gltf-model>
+      </a-entity>
+      
+      <a-light type="ambient" intensity="1.5"></a-light>
+      <a-light type="directional" position="0 10 10" intensity="0.5"></a-light>
+
+    </a-scene>
+  </body>
+</html>
